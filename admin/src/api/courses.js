@@ -1,0 +1,185 @@
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://skills-platform-1.onrender.com";
+
+const COURSE_PATHS = ["/api/courses", "/api/course"];
+
+export const getAdminAuthHeaders = async (getToken) => {
+  const token = await getToken();
+  if (!token) throw new Error("Sign in to access the admin dashboard.");
+  return { Authorization: `Bearer ${token}` };
+};
+
+const parseResponse = async (response) => {
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      data?.message ||
+      data?.error ||
+      `Request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  return data;
+};
+
+const requestCourseApi = async (pathBuilder, getToken, options = {}) => {
+  let lastError;
+  const authHeaders = await getAdminAuthHeaders(getToken);
+
+  for (const basePath of COURSE_PATHS) {
+    try {
+      const isFormData = options.body instanceof FormData;
+      const headers = isFormData
+        ? { ...authHeaders, ...(options.headers || {}) }
+        : {
+            "Content-Type": "application/json",
+            ...authHeaders,
+            ...(options.headers || {}),
+          };
+
+      const response = await fetch(`${API_BASE_URL}${pathBuilder(basePath)}`, {
+        ...options,
+        headers,
+      });
+
+      if ((response.status === 404 || response.status === 405) && basePath !== COURSE_PATHS.at(-1)) {
+        lastError = new Error(`Endpoint unavailable: ${basePath}`);
+        continue;
+      }
+
+      return parseResponse(response);
+    } catch (error) {
+      lastError = error;
+      if (basePath === COURSE_PATHS.at(-1)) break;
+    }
+  }
+
+  throw lastError || new Error("Unable to reach course API");
+};
+
+export const getCourseId = (course) => course?._id || course?.id;
+
+export const getCourseTitle = (course) =>
+  course?.title || course?.name || "Untitled Course";
+
+export const getCourseDescription = (course) =>
+  course?.description || course?.overview || "";
+
+export const getCourseInstructor = (course) =>
+  course?.instructor || course?.teacher || "";
+
+export const getCourseThumbnail = (course) =>
+  course?.thumbnail || course?.thumbnailUrl || course?.image || "";
+
+export const getCourseStatus = (course) => {
+  if (course?.status) return course.status;
+  if (typeof course?.published === "boolean") {
+    return course.published ? "published" : "draft";
+  }
+  return course?.courseType === "top" ? "published" : "draft";
+};
+
+export const getCoursePrice = (course) => {
+  if (typeof course?.price === "number" || typeof course?.price === "string") {
+    return Number(course.price) || 0;
+  }
+
+  return Number(course?.price?.sale ?? course?.price?.original ?? 0) || 0;
+};
+
+export const normalizeCourse = (course) => ({
+  ...course,
+  id: getCourseId(course),
+  title: getCourseTitle(course),
+  description: getCourseDescription(course),
+  category: course?.category || "",
+  instructor: getCourseInstructor(course),
+  priceValue: getCoursePrice(course),
+  thumbnail: getCourseThumbnail(course),
+  status: getCourseStatus(course),
+  pricingType: course?.pricingType || (getCoursePrice(course) > 0 ? "paid" : "free"),
+  courseType: course?.courseType || "regular",
+  rating: Number(course?.rating ?? course?.avgRating ?? 0) || 0,
+  totalDuration: course?.totalDuration || { hours: 0, minutes: 0 },
+  totalLectures: course?.totalLectures || course?.lectures?.length || 0,
+  lastUpdated: course?.updatedAt || course?.createdAt || null,
+});
+
+export const serializeCoursePayload = (formData) => {
+  const price = formData.pricingType === "free" ? 0 : Number(formData.price);
+
+  return {
+    title: formData.title.trim(),
+    name: formData.title.trim(),
+    description: formData.description.trim(),
+    overview: formData.description.trim(),
+    category: formData.category.trim(),
+    price,
+    pricingType: formData.pricingType || (price > 0 ? "paid" : "free"),
+    thumbnail: formData.thumbnail?.trim() || "",
+    image: formData.thumbnail?.trim() || "",
+    instructor: formData.instructor.trim(),
+    teacher: formData.instructor.trim(),
+    status: formData.status,
+    courseType: formData.courseType,
+    rating: Number(formData.rating) || 0,
+    totalDuration: {
+      hours: Number(formData.durationHours) || 0,
+      minutes: Number(formData.durationMinutes) || 0,
+    },
+    totalLectures: Number(formData.totalLectures) || 0,
+  };
+};
+
+export const serializeCourseFormData = (formData) => {
+  const payload = serializeCoursePayload(formData);
+  const multipart = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value && typeof value === "object") {
+      multipart.append(key, JSON.stringify(value));
+    } else {
+      multipart.append(key, String(value ?? ""));
+    }
+  });
+
+  if (formData.imageFile) {
+    multipart.append("image", formData.imageFile);
+  }
+
+  return multipart;
+};
+
+export const fetchCourses = async (getToken) => {
+  const data = await requestCourseApi((basePath) => basePath, getToken);
+  const rawCourses = data?.courses || data?.items || data?.data || data || [];
+  return Array.isArray(rawCourses) ? rawCourses.map(normalizeCourse) : [];
+};
+
+export const updateCourse = async (courseId, updates, getToken) => {
+  const data = await requestCourseApi((basePath) => `${basePath}/${courseId}`, getToken, {
+    method: "PUT",
+    body: serializeCourseFormData(updates),
+  });
+
+  return normalizeCourse(data?.course || data?.data || data);
+};
+
+export const deleteCourse = async (courseId, getToken) =>
+  requestCourseApi((basePath) => `${basePath}/${courseId}`, getToken, {
+    method: "DELETE",
+  });
+
+export const updateCourseStatus = async (courseId, status, getToken) => {
+  const data = await requestCourseApi(
+    (basePath) => `${basePath}/${courseId}/status`,
+    getToken,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  return normalizeCourse(data?.course || data?.data || data);
+};
