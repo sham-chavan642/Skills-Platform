@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
@@ -11,17 +12,19 @@ const port = process.env.PORT || 4000;
 
 // Middlewares
 app.use(cors({
-	origin: [
-		"http://localhost:5173",
-		"http://localhost:5174",
-		"http://127.0.0.1:5173",
-		"http://127.0.0.1:5174",
+    origin: [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
 
-		// Vercel Frontend + Admin (add your real deployed links here)
-		"https://skills-platform-raew.vercel.app",
-		"https://skills-platform-admin.vercel.app"
-	],
-	credentials: true
+        // Production Frontend
+        "https://skills-platform-orcin.vercel.app",
+
+        // Admin Frontend
+        "https://skills-platform-admin.vercel.app"
+    ],
+    credentials: true
 }));
 
 app.use(express.json());
@@ -29,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(clerkMiddleware());
 
-// DB
+// Database Connection
 connectDB();
 
 // Routes
@@ -37,10 +40,12 @@ app.use('/api/course', courseRouter);
 app.use('/api/courses', courseRouter);
 app.use('/api/booking', bookingRouter);
 
+// Health Check
 app.get('/', (req, res) => {
-	res.send('API working');
+    res.send('API working');
 });
 
-app.listen(port, () => {
-	console.log(`Server Started on port: ${port}`);
+// Start Server
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server Started on port: ${port}`);
 });
