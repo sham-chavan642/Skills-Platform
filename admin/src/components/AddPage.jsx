@@ -5,7 +5,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { toast, Toaster } from "react-hot-toast";
 import { BadgeIndianRupee, BookOpenText, ChevronDown, ChevronUp, Clock, Image as ImageIcon, ListOrdered, PenLine, Plus, Star, Upload, UserPen, Video, X } from "lucide-react";
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'https://skills-platform-1.onrender.com';
+  import.meta.env.VITE_API_BASE_URL || 'https://skills-platform-backend.vercel.app';
 
 // formatDuration accepts either {hours, minutes} or (hours, minutes)
 const formatDuration = (a, b) => {
