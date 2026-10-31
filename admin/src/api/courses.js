@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://skills-platform-1.onrender.com";
+  import.meta.env.VITE_API_BASE_URL || "https://skills-platform-backend.vercel.app";
 
 const COURSE_PATHS = ["/api/courses", "/api/course"];
 
