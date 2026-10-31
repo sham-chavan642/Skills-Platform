@@ -18,7 +18,7 @@ app.use(cors({
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
         "https://skills-platform-orcin.vercel.app",
-        "https://skills-platform-admin.vercel.app"
+        "https://skills-platform-admin-dusky.vercel.app"
     ],
     credentials: true
 }));
