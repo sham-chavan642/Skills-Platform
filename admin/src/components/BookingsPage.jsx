@@ -4,7 +4,7 @@ import { bookingsStyles } from '../assets/dummyStyles';
 import { BadgeIndianRupee, BookOpen, BookSearch, GraduationCap, Search, User } from 'lucide-react';
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'https://skills-platform-1.onrender.com';
+  import.meta.env.VITE_API_BASE_URL || 'https://skills-platform-backend.vercel.app';
 
 const BookingsPage = () => {
     const { getToken } = useAuth();
