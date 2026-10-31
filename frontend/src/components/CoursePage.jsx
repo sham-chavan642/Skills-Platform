@@ -9,7 +9,7 @@ import { useUser, useAuth, Waitlist } from '@clerk/clerk-react';
 import { Toaster } from 'react-hot-toast';
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "" : "https://skills-platform-1.onrender.com");
+  (import.meta.env.DEV ? "" : "https://skills-platform-backend.vercel.app");
 
 const StarIcon = ({ filled = false, half = false, className = "" }) => {
     if (half) {
