@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import axios from "axios";
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const API_BASE = 'https://skills-platform-1.onrender.com';
+const API_BASE = 'https://skills-platform-backend.vercel.app';
 
 const VerifyPaymentPage = () => {
 
