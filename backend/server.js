@@ -28,16 +28,16 @@ app.use(cors({
         }
 
         console.error('Blocked by CORS:', origin);
-        return callback(null, false);
+        return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization'
+    ],
     optionsSuccessStatus: 204
 }));
-
-// Handle Preflight Requests
-app.options('*', cors());
 
 // Body Middleware
 app.use(express.json());
@@ -63,9 +63,16 @@ app.use('/api/booking', bookingRouter);
 app.use((err, req, res, next) => {
     console.error('Server Error:', err);
 
+    if (err.message === 'Not allowed by CORS') {
+        return res.status(403).json({
+            success: false,
+            message: 'CORS blocked this origin'
+        });
+    }
+
     return res.status(500).json({
         success: false,
-        message: err.message || 'Internal Server Error'
+        message: 'Internal Server Error'
     });
 });
 
