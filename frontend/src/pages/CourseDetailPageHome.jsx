@@ -26,7 +26,7 @@ import { useUser, useAuth } from "@clerk/clerk-react";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "" : "https://skills-platform-1.onrender.com");
+  (import.meta.env.DEV ? "" : "https://skills-platform-backend.vercel.app");
 
 const fmtMinutes = (mins) => {
   const h = Math.floor((mins || 0) / 60);
