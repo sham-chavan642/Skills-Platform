@@ -4,7 +4,7 @@ import { dashboardStyles } from '../assets/dummyStyles';
 import { BadgeIndianRupee, BookMarked, BookOpenText, Search, ShoppingCart, Users } from "lucide-react";
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'https://skills-platform-1.onrender.com';
+  import.meta.env.VITE_API_BASE_URL || 'https://skills-platform-backend.vercel.app';
 const fmtCurrency = (n) => {
     if (n == null) return "₹0";
     const num = Number(n);
