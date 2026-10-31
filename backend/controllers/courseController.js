@@ -1,4 +1,4 @@
-javascript
+
 import Course from "../models/courseModel.js";
 import { getAuth } from "@clerk/express";
 import cloudinary from "../config/cloudinary.js";
