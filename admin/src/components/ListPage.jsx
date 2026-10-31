@@ -15,7 +15,7 @@ const ListPage = () => {
   const [loading, setLoading] = useState(false);
 
   const API_BASE =
-    import.meta.env.VITE_API_BASE_URL || "https://skills-platform-1.onrender.com";
+    import.meta.env.VITE_API_BASE_URL || "https://skills-platform-backend.vercel.app";
 
   // build image URL
   const getImageUrl = (imagePath) => {
