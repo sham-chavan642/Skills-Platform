@@ -1,3 +1,4 @@
+```javascript
 import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
@@ -20,30 +21,42 @@ const allowedOrigins = [
 ];
 
 // CORS Configuration
-app.use(cors({
+const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
+            console.error("Blocked by CORS:", origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    methods: [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'OPTIONS'
+    ],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization'
+    ],
+    optionsSuccessStatus: 204
+};
 
-// Handle Preflight Requests
-app.options(/.*/, cors({
-    origin: allowedOrigins,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Apply CORS before all routes and middleware
+app.use(cors(corsOptions));
 
-// Middlewares
+// Handle preflight requests
+app.options(/.*/, cors(corsOptions));
+
+// Body Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Clerk Middleware
 app.use(clerkMiddleware());
 
 // Database Connection
@@ -56,10 +69,28 @@ app.use('/api/booking', bookingRouter);
 
 // Health Check
 app.get('/', (req, res) => {
-    res.send('API working');
+    res.status(200).send('API working');
+});
+
+// Error Handler
+app.use((err, req, res, next) => {
+    console.error("Server Error:", err.message);
+
+    if (err.message === 'Not allowed by CORS') {
+        return res.status(403).json({
+            success: false,
+            message: 'CORS blocked this origin'
+        });
+    }
+
+    return res.status(500).json({
+        success: false,
+        message: 'Internal Server Error'
+    });
 });
 
 // Start Server
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server Started on port: ${port}`);
 });
+```
