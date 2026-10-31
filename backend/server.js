@@ -21,24 +21,23 @@ const allowedOrigins = [
 ];
 
 // CORS Configuration
-const corsOptions = {
-    origin: (origin, callback) => {
+app.use(cors({
+    origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
 
         console.error('Blocked by CORS:', origin);
-        return callback(new Error('Not allowed by CORS'));
+        return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     optionsSuccessStatus: 204
-};
+}));
 
-// CORS must run before routes and middleware
-app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+// Handle Preflight Requests
+app.options('*', cors());
 
 // Body Middleware
 app.use(express.json());
@@ -64,16 +63,9 @@ app.use('/api/booking', bookingRouter);
 app.use((err, req, res, next) => {
     console.error('Server Error:', err);
 
-    if (err.message === 'Not allowed by CORS') {
-        return res.status(403).json({
-            success: false,
-            message: 'CORS blocked this origin'
-        });
-    }
-
     return res.status(500).json({
         success: false,
-        message: 'Internal Server Error'
+        message: err.message || 'Internal Server Error'
     });
 });
 
