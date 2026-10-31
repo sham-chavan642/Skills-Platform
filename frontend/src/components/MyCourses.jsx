@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { Play, Star, User } from 'lucide-react';
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "" : "https://skills-platform-1.onrender.com");
+  (import.meta.env.DEV ? "" : "https://skills-platform-backend.vercel.app");
 
 
 const MyCourses = () => {
